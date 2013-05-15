@@ -1,0 +1,6 @@
+
+include *txt
+recursive-include pygor *.py *.txt
+recursive-include pygor/test *.py *.txt
+prune bin
+
