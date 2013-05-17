@@ -1,9 +1,10 @@
 import os
 import unittest
 
-from pygor.test.common import MAKEFILE_DIR
+from pygor.test.common import in_resources
+from pygor.procedure import MakeProcedure, Procedure
 
-from pygor import MakeProcedure, Procedure
+MAKEFILE_DIR = in_resources("")
 
 class TestMakeProcedure(unittest.TestCase):
 

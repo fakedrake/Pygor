@@ -56,6 +56,9 @@ class Procedure(object):
     def get_exit(self):
         return self.exit_code
 
+    def get_title(self):
+        return self.command
+
     def run(self):
         """ Run yourself.
         """

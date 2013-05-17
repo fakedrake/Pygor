@@ -1,12 +1,13 @@
 from pygor.procedure import Procedure
-from pygor.settings import DEFAULT_MACHINE_ID_TEMPLATE
+from pygor.settings import DEFAULT_MACHINE_ID_TEMPLATE, \
+    DEFAULT_PROJECT_ROOT
 
-def generate_id(id):
+def generate_id(id, id_template=DEFAULT_MACHINE_ID_TEMPLATE):
     """ Generate an id for the big machine.
     """
 
     if id is None:
-        return datetime.now().strftime(DEFAULT_MACHINE_ID_TEMPLATE)
+        return datetime.now().strftime(id_template)
 
     return id
 
@@ -18,12 +19,14 @@ class BigMachine(object):
 
     """
 
-    def __init__(self, procedures=[], cleanup_procedures=[], identifier=None, working_dir=None):
+    def __init__(self, procedures=[], cleanup_procedures=[], working_dir=DEFAULT_WORKING_DIR, id=None, id_template=DEFAULT_MACHINE_ID_TEMPLATE):
         """Provide some procedures for testing and cleanup. You may also
-        provide an identifier.
+        provide an identifier which is used as-is as a directory
+        name. By default cleanup is removing the directory that would
+        otherwise be created.
 
         """
-        self.identifier = generate_id(identifier)
+        self.identifier = generate_id(id, id_template)
 
         self.working_dir = working_dir
         self.procedures = procedures
@@ -36,6 +39,7 @@ class BigMachine(object):
 
         self.error = None
         self.stdout = stdout
+        self._ran = False
 
     def cleanup(self):
         """Undo whatever would be done. Typically remove the directory that
@@ -45,22 +49,8 @@ class BigMachine(object):
 
         return self._run(self.cleanup_procedures)
 
-    def setup(self):
-        """Setup the environment for running."""
-
-        self._setup = True
-
-        if not self.get_error():
-            return self._run(self.procedures)
-
-        raise EnvironmentError("There have been errors during previous run of BigMachine.")
-
-
     def run(self):
         """Run tests."""
-
-        if not self._setup:
-            self.setup()
 
         if not self.get_error():
             return self._run(self.procedures)
@@ -70,11 +60,13 @@ class BigMachine(object):
     def _run(self, procedures):
         """ Run the tests one by one.
         """
+        self._ran = True
+
         for p in procedures:
             p.run()
 
             if p.get_error() is not None:
-                self.error = t.get_error()
+                self.error = dict(error_title=p.get_title(), error_body=p.get_error())
                 self.stdout = t.stdout
                 return t.stdout
 

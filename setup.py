@@ -15,7 +15,7 @@ setup(
     packages=['pygor',
               'pygor.test'],
     install_requires=['GitPython'],
-    test_requires=['nose'],
+    tests_require=['nose'],
     long_description=read('README.org'),
     test_suite='pygor.test',
     classifiers=[ "Programming Language :: Python :: 2.7",
