@@ -29,5 +29,5 @@ class Tagger(Logger):
 
     def make_tags(self, template=DEFAULT_TAG_STRF_TEMPLATE):
         """Tag all branches"""
-        for r in repos:
+        for r in self.repos:
             self.make_tag(r, template)

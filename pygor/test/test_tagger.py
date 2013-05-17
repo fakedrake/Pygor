@@ -1,6 +1,7 @@
 import os
 import unittest
 import git
+import subprocess
 
 from pygor.test.common import in_resources
 from pygor.tagger import Tagger
@@ -35,4 +36,4 @@ class TestMakeProcedure(unittest.TestCase):
     def test_tagger(self):
         self.tagger = Tagger([GIT_REPO], in_resources())
         self.tagger.make_tags()
-        assertIn("Release-", self.repo.tags[0])
+        self.assertIn("Release-", self.repo.tags[0].name)
