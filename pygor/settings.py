@@ -54,4 +54,6 @@ EMAIL_TEMPLATES = {
 }
 
 # Logging
+import logging
 LOGGER_ID = "pygor"
+LOG_LEVEL = logging.DEBUG

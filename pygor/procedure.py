@@ -2,10 +2,11 @@ import os
 import shlex
 from subprocess import Popen, PIPE
 
-from pygor.settings import MAKE_EXIT_TO_ERROR, \
-    DEFAULT_MAKE_CMD
+from pygor.logger import Logger
+from pygor.settings import MAKE_EXIT_TO_ERROR, DEFAULT_MAKE_CMD
 
-class Procedure(object):
+
+class Procedure(Logger):
     """ Subclass this to create a procedure that the Big Machine can run.
     """
 

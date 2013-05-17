@@ -3,10 +3,10 @@ import datetime
 
 from git import Repo
 
-from pygor.settings import TAG_STRF_TEMPLATE, DEFAULT_PROJECT_ROOT
+from pygor.logger import Logger
+from pygor.settings import DEFAULT_TAG_STRF_TEMPLATE, DEFAULT_PROJECT_ROOT
 
-
-class Tagger(object):
+class Tagger(Logger):
     """ Add tags to the heads of objects
     """
 
@@ -27,7 +27,7 @@ class Tagger(object):
         """Create the tag name we are to create from current time."""
         repo.create_tag(datetime.datetime.now().strftime(template))
 
-    def make_tags(self):
+    def make_tags(self, template=DEFAULT_TAG_STRF_TEMPLATE):
         """Tag all branches"""
         for r in repos:
-            self.make_tag(r)
+            self.make_tag(r, template)

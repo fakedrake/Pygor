@@ -3,7 +3,7 @@ import logging
 from pygor.emailer import Emailer
 from pygor.BigMachine import BigMachine
 from pygor.tagger import Tagger
-from pygor.settings import LOGGER_ID
+from pygor.settings import LOGGER_ID, LOG_LEVEL
 
 class Pygor(object):
     """ Pygor orichestrates the machinery.
@@ -16,19 +16,23 @@ class Pygor(object):
         self.watched_repos = watched_projects_file.readlines()
         self.spamtargets = spamtargets_file.readlines()
 
+        # Setup the logger
         self.logger = logging.getLogger(LOGGER_ID)
         self.logger.fileConfig(logfile)
+        self.logger.setLevel(LOG_LEVEL)
 
         self.machine = BigMachine()
 
 
     def check_tree(self, enable_email=ENABLE_EMAIL):
-        """ Check the tree.
+        """Add all the tests to the machine, email me the result and if
+        everything went well tag the interesting repos.
+
         """
         for md in self.make_directives:
             self.machine.add_test(md)
 
-            self.machine.run()
+        self.machine.run()
 
         if enable_email:
             emailer = Emailer(self.spamtargets, machine)
