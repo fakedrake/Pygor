@@ -1,6 +1,7 @@
-from pygor.procedure import Procedure
-from pygor.settings import DEFAULT_MACHINE_ID_TEMPLATE, \
-    DEFAULT_PROJECT_ROOT
+from datetime import datetime
+
+from pygor.procedure import Procedure, MakeProcedure
+from pygor.settings import DEFAULT_MACHINE_ID_TEMPLATE, DEFAULT_PROJECT_ROOT, DEFAULT_WORKING_DIR
 
 def generate_id(id, id_template=DEFAULT_MACHINE_ID_TEMPLATE):
     """ Generate an id for the big machine.
@@ -37,9 +38,8 @@ class BigMachine(object):
             self.cleanup_procedures = [Procedure("rm -rf %s" %
                                                  self.identifier, working_dir=working_dir)]
 
-        self.error = None
-        self.stdout = stdout
-        self._ran = False
+        self.reset()
+
 
     def cleanup(self):
         """Undo whatever would be done. Typically remove the directory that
@@ -67,8 +67,8 @@ class BigMachine(object):
 
             if p.get_error() is not None:
                 self.error = dict(error_title=p.get_title(), error_body=p.get_error())
-                self.stdout = t.stdout
-                return t.stdout
+                self.stdout = p.get_output()
+                return self.stdout
 
         return None
 
@@ -86,3 +86,15 @@ class BigMachine(object):
             self.procedures.append(MakeProcedure(procedure))
         else:
             self.procedures.append(procedure)
+
+    def reset(self, procedures=False):
+        """ Reset to a state as if it had never run.
+        """
+        self._ran = False
+        self.exit_code = None
+        self.stdout = None
+        self.stderr = None
+        self.error = None
+
+        if procedures:
+            self.procedures = []

@@ -1,4 +1,4 @@
-LOGFILE = "pygor.logo"
+LOGFILE = "pygor.log"
 
 # Make directives are appended to this
 DEFAULT_MAKE_CMD = "make"
@@ -37,7 +37,7 @@ MAKE_EXIT_TO_ERROR = {
 ENABLE_EMAIL = True
 
 # Sender email address
-PYGOR_EMAIL = "pygor@thinksilicon.com"
+PYGOR_EMAIL = "pygor@example.com"
 
 # All emails should be formatted with a context that contains
 # logfile and error.
@@ -48,10 +48,16 @@ EMAIL_TEMPLATES = {
     },
 
     "error" : {
-        'subject' : '[ERROR] There was a failure: %s(error_title)',
+        'subject' : '[ERROR] There was a failure: %(error_title)s',
         'body' : "Here comes some information. Check the logfile too (%(logfile)s)\n\n %(error_body)s"
     }
 }
+
+# This config will not work!
+SMTP_CONFIG = dict(server="mail.example.com",
+                   port=25,
+                   user=PYGOR_EMAIL,
+                   password="123!@#qwe")
 
 # Logging
 import logging

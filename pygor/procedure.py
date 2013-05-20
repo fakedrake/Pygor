@@ -40,16 +40,27 @@ class Procedure(Logger):
         `output' and `exit_code' with the command's stdout and exit code.
 
         """
-
         final_cmd = self.command % self.parametrizer(self)
-        args = shlex.split(final_cmd)
-        p = Popen(args, stdout=PIPE, stderr=PIPE, cwd=self.working_dir)
+
+        try:
+            args = shlex.split(final_cmd)
+            p = Popen(args, stdout=PIPE, stderr=PIPE, cwd=self.working_dir)
+        except OSError:
+            # It might be a shell builtin
+            args = shlex.split("bash -i -c \"%s\"" % final_cmd)
+            p = Popen(args, stdout=PIPE, stderr=PIPE, cwd=self.working_dir)
+
         p.wait()
         self.stdout, self.stderr = p.communicate()
         self.exit_code = p.returncode
 
+        if self.exit_code != self.expected_exit:
+            self.error = "Expected exit code %d, got %d." % (self.expected_exit, self.exit_code)
+
     def get_error(self):
-        return self.error
+        if self.error:
+            return "Error: %s\nStderr: %s" % \
+                (self.error, self.stderr)
 
     def get_output(self):
         return self.stdout
