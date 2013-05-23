@@ -5,3 +5,12 @@
    Feed Pygor a list of make commands and it will run them on the
    current directory. When an error is encountered pygor will send you
    an email informing you of the situation.
+
+   You should provide 4 files to =Pygor=:
+
+   - The paths to the interesting repositories relative to the
+     root.
+   - A list of emails that =Pygor= will use to contact about the status
+   - The log file that =Pygor= will use to keep track of what is going
+     on.
+   - A list of the directives to be passed to make.

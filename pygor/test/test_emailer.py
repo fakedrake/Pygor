@@ -88,7 +88,6 @@ class TestEmailer(unittest.TestCase):
         self.produce_exit(10)
         self.assertIn("exit 10", self.emailer.get_email().as_string())
 
-    # XXX: create mail mocks etc
     def test_sending(self):
         self.produce_exit(10)
         self.emailer.send_email(SMTP_CONFIG)

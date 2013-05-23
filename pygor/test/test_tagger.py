@@ -10,7 +10,7 @@ GIT_REPO = in_resources("DummyGit")
 REPO_FILE = os.path.join(GIT_REPO, "test.txt")
 TAG_TEMPLATE = "Release-%Y.%m.%d-%H.%M.%S"
 
-class TestMakeProcedure(unittest.TestCase):
+class TestTagger(unittest.TestCase):
     def setUp(self):
         """Setup a dummy git repository with two commits.
 
