@@ -1,16 +1,14 @@
 from datetime import datetime
 
 from pygor.procedure import Procedure, MakeProcedure
-from pygor.settings import DEFAULT_MACHINE_ID_TEMPLATE, DEFAULT_PROJECT_ROOT, DEFAULT_WORKING_DIR
+from pygor.settings_manager import DEFAULT_SETTINGS, update_settings
 
-def generate_id(id, id_template=DEFAULT_MACHINE_ID_TEMPLATE):
+
+def generate_id(id_template):
     """ Generate an id for the big machine.
     """
 
-    if id is None:
-        return datetime.now().strftime(id_template)
-
-    return id
+    return datetime.now().strftime(id_template)
 
 
 class BigMachine(object):
@@ -20,23 +18,29 @@ class BigMachine(object):
 
     """
 
-    def __init__(self, procedures=[], cleanup_procedures=[], working_dir=DEFAULT_WORKING_DIR, id=None, id_template=DEFAULT_MACHINE_ID_TEMPLATE):
+    def __init__(self, conf=DEFAULT_SETTINGS, **kwargs):
         """Provide some procedures for testing and cleanup. You may also
         provide an identifier which is used as-is as a directory
         name. By default cleanup is removing the directory that would
-        otherwise be created.
+        otherwise be created. The working dir is the default dir that
+        we use when creating new processes.
 
         """
-        self.identifier = generate_id(id, id_template)
+        self.settings = updated_settings(conf.settings, **kwargs)
 
-        self.working_dir = working_dir
-        self.procedures = procedures
+        self.identifier = generate_id(self.settings["ID_TEMPLATE"])
+        try:
+            self.working_dir = os.path.join(self.settings["WORKING_DIR"], self.identifier)
+        except AttributeError:
+            self.working_dir = None
 
-        if cleanup_procedures:
-            self.cleanup_procedures = cleanup_procedures
-        else:
-            self.cleanup_procedures = [Procedure("rm -rf %s" %
-                                                 self.identifier, working_dir=working_dir)]
+        self.context = dict(machine_id=self.identifier, pwd=(self.working_dir))
+
+        self.procedures = conf.setup_cmds
+        for p in self.procedures:
+            p.command = p.command % self.context
+
+        self.cleanup_procedures = [Procedure(c % self.context, working_dir=working_dir) for c in conf.cleanup_cmds]
 
         self.reset()
 
@@ -83,7 +87,7 @@ class BigMachine(object):
         by name."""
 
         if isinstance(procedure, str):
-            self.procedures.append(MakeProcedure(procedure))
+            self.procedures.append(MakeProcedure(procedure % self.context, working_dir=self.working_dir))
         else:
             self.procedures.append(procedure)
 

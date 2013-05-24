@@ -1,8 +1,10 @@
 import logging
 from types import FunctionType
 
-from pygor.settings import LOGGER_ID
+from pygor.settings_manager import DEFAULT_SETTINGS
 
+# XXX: WATCH OUT! YOU MAY NOT CHANGE THIS FROM CONFIG
+LOGGER_ID = DEFAULT_SETTINGS.settings["LOGGER_ID"]
 
 def log_call(func):
     def wrapped(obj, *args, **kwargs):

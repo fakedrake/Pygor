@@ -12,6 +12,7 @@ setup(
     license = "GPL",
     keywords = "",
     url = "http://packages.python.org/Pygor",
+    entry_points={'console_scripts':['pygor = pygor:main.main'] },
     packages=['pygor',
               'pygor.test'],
     install_requires=['GitPython'],

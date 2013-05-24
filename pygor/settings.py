@@ -1,3 +1,15 @@
+PYGOR_HELP = """
+
+Pygor will run a couple of commands and a couple of make directives to
+build your project tree and test it. Then it sends you an email with
+the result. Soon we may have config files for all this. For now
+settings.py will have to do. All commands have the standard python string formatting  with contect of:
+
+pwd :: the current working directory.
+machine_id :: the name of the generated name for the machine.
+
+"""
+
 LOGFILE = "pygor.log"
 
 # Make directives are appended to this
@@ -62,4 +74,5 @@ SMTP_CONFIG = dict(server="mail.example.com",
 # Logging
 import logging
 LOGGER_ID = "pygor"
-LOG_LEVEL = logging.DEBUG
+LOG_LEVEL = logging.INFO
+LOG_FORMAT = "%(asctime)s - %(class_name)s [%(levelname)s]: %(message)s"

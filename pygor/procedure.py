@@ -3,14 +3,13 @@ import shlex
 from subprocess import Popen, PIPE
 
 from pygor.logger import Logger
-from pygor.settings import MAKE_EXIT_TO_ERROR, DEFAULT_MAKE_CMD
-
+from pygor.settings_manager import DEFAULT_SETTINGS, update_settings
 
 class Procedure(Logger):
     """ Subclass this to create a procedure that the Big Machine can run.
     """
 
-    def __init__(self, command, expected_exit=0, parametrizer=lambda proc: dict(), working_dir=None):
+    def __init__(self, command, expected_exit=0, working_dir=None, conf=DEFAULT_SETTINGS, **kwargs):
         """Most of the time creating the right procedure will be just
         enough. The parametrizer is a callable expected to return a
         dict to dynamically format command with a single parameter
@@ -27,7 +26,6 @@ class Procedure(Logger):
         """
         self.command = command
         self.expected_exit = expected_exit
-        self.parametrizer = parametrizer
         self.working_dir = working_dir
 
         self.stdout = None
@@ -40,22 +38,23 @@ class Procedure(Logger):
         `output' and `exit_code' with the command's stdout and exit code.
 
         """
-        final_cmd = self.command % self.parametrizer(self)
 
         try:
-            args = shlex.split(final_cmd)
+            args = shlex.split(self.command)
             p = Popen(args, stdout=PIPE, stderr=PIPE, cwd=self.working_dir)
         except OSError:
             # It might be a shell builtin
-            args = shlex.split("bash -i -c \"%s\"" % final_cmd)
+            args = shlex.split("bash -i -c \"%s\"" % self.command)
             p = Popen(args, stdout=PIPE, stderr=PIPE, cwd=self.working_dir)
 
+        self.logger.info("Running '%s' in '%s'" % (self.command, self.working_dir))
         p.wait()
         self.stdout, self.stderr = p.communicate()
         self.exit_code = p.returncode
 
         if self.exit_code != self.expected_exit:
             self.error = "Expected exit code %d, got %d." % (self.expected_exit, self.exit_code)
+            self.logger.error(self.error)
 
     def get_error(self):
         if self.error:
@@ -83,20 +82,20 @@ class MakeProcedure(Procedure):
     than simple popen.
     """
 
-    def __init__(self, directive="", exit_to_error=MAKE_EXIT_TO_ERROR, make_command=DEFAULT_MAKE_CMD, *args, **kwargs):
+    def __init__(self, directive="", conf=DEFAULT_SETTINGS, *args, **kwargs):
         """ Give the first directive.
 	"""
 
-        self.exit_to_error = exit_to_error
-        command = "%s %s" % (make_command, directive)
+        self.exit_to_error = conf.settings["MAKE_EXIT_TO_ERROR"]
+        command = "%s %s" % (conf.settings["DEFAULT_MAKE_CMD"], directive)
 
-        super(MakeProcedure, self).__init__(command, *args, **kwargs)
+        super(MakeProcedure, self).__init__(command, conf=conf, *args, **kwargs)
 
 
     def get_error(self):
         error = super(MakeProcedure, self).get_error()
 
-        if self.exit_code in self.exit_to_error.keys():
+        if self.exit_code in self.exit_to_error:
             if not error:
                 error = ""
 

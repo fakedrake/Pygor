@@ -2,7 +2,7 @@ import os
 import smtplib
 from email.mime.text import MIMEText
 
-from pygor.settings import LOGFILE, EMAIL_TEMPLATES, PYGOR_EMAIL
+from pygor.settings_manager import DEFAULT_SETTINGS, update_settings
 from pygor.logger import Logger
 
 class Emailer(Logger):
@@ -10,11 +10,12 @@ class Emailer(Logger):
 
     """
 
-    def __init__(self, spamtargets, machine):
+    def __init__(self, machine, conf=DEFAULT_SETTINGS, **kwargs):
         """Mark the recipients and the machine.
 
         """
-        self.spamtargets = spamtargets
+        self.settings = updated_settings(conf.settings)
+        self.spamtargets = conf.spamtargets
         self.machine = machine
 
     def mail_type(self):
@@ -34,14 +35,16 @@ class Emailer(Logger):
 
         return None
 
-    def get_email(self, logfile=LOGFILE, msg_template=EMAIL_TEMPLATES, from_mail=PYGOR_EMAIL):
+    def get_email(self, **kwargs):
         """Return an email object of the email to be sent. Dont actually send
         anything.
 
         """
+        settings = updated_settings(self.settings, **kwargs)
+        msg_template = settings["EMAIL_TEMPLATES"]
 
-        context = dict(logfile=os.path.abspath(logfile))
-        context.update(self.machine.get_error())
+        context = dict(logfile=os.path.abspath(settings["LOGFILE"]))
+        context.update(self.machine.get_error() or {})
 
         if self.mail_type() is None:
             return None
@@ -54,12 +57,16 @@ class Emailer(Logger):
         msg['To'] = ','.join(self.spamtargets)
         return msg
 
-    def send_email(self, smtp_config, msg_template=EMAIL_TEMPLATES, logfile=LOGFILE):
+    def send_email(self, **kwargs) smtp_config, msg_template=EMAIL_TEMPLATES, logfile=LOGFILE):
         """smtp_config is mandatory really. You will need 'server', 'port',
         'user' (this is the email), 'password' in there.
 
         """
+        settings = update_settings(self.settings, **kwargs)
+        smtp_config = settings["SMTP_CONFIG"]
+        msg = self.get_email(**kwargs)
         s = smtplib.SMTP()
+
         s.set_debuglevel(0)
         exit_code, exit_message = s.connect(smtp_config['server'], smtp_config['port'])
         if exit_code != 220:
@@ -67,7 +74,6 @@ class Emailer(Logger):
 
         s.login(smtp_config['user'], smtp_config['password'])
 
-        msg = self.get_email(logfile, msg_template, smtp_config['user'])
         sender = smtp_config['user']
         recipients = msg['To'].split(',')
         s.sendmail(sender, recipients, msg.as_string())
