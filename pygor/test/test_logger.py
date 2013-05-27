@@ -32,3 +32,6 @@ class TestMakeProcedure(unittest.TestCase):
         self.main_logger.setLevel(logging.DEBUG)
         self.a.foo()
         self.assertIn("foo", open(LOG_FILE).read())
+
+    def tearDown(self):
+        open(LOG_FILE, "w").write("")

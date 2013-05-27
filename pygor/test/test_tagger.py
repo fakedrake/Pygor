@@ -3,7 +3,7 @@ import unittest
 import git
 import subprocess
 
-from pygor.test.common import in_resources
+from pygor.test.common import in_resources, snapshot_resources, clean_resources
 from pygor.tagger import Tagger
 
 GIT_REPO = in_resources("DummyGit")
@@ -15,6 +15,8 @@ class TestTagger(unittest.TestCase):
         """Setup a dummy git repository with two commits.
 
         """
+        snapshot_resources()
+
         self.repo = git.Repo.init(GIT_REPO)
 
         # Commit a file
@@ -30,8 +32,7 @@ class TestTagger(unittest.TestCase):
         """Completely delete the repo.
 
         """
-        subprocess.call(["rm", "-rf", GIT_REPO])
-
+        clean_resources()
 
     def test_tagger(self):
         self.tagger = Tagger([GIT_REPO], default_project_root=in_resources())

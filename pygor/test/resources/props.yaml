@@ -1,0 +1,11 @@
+# This is a comment
+
+settings:
+  logfile: pygor.log
+  default_make_cmd: make -k
+
+setup:
+  - git clone git@github.com:fakedrale/BTags %(pwd)/BTags
+
+make:
+  - hello_world
