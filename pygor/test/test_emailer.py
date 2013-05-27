@@ -53,7 +53,6 @@ class MockSMTP(object):
     def quit(self):
         self.has_quit=True
 
-# Monkey patch
 smtplib.SMTP=MockSMTP
 
 class TestEmailer(unittest.TestCase):
@@ -62,7 +61,7 @@ class TestEmailer(unittest.TestCase):
         self.machine = BigMachine()
         spamtargets = SPAMTARGETS
 
-        self.emailer = Emailer(spamtargets, self.machine)
+        self.emailer = Emailer(self.machine, spamtargets=spamtargets)
 
     def produce_exit(self, code):
         """ Make machine produce an error.
@@ -90,7 +89,14 @@ class TestEmailer(unittest.TestCase):
 
     def test_sending(self):
         self.produce_exit(10)
-        self.emailer.send_email(SMTP_CONFIG)
+        self.emailer.send_email(smtp_config=SMTP_CONFIG)
 
         self.assertEquals(len(inbox), 1)
         self.assertEquals(inbox[0].fullmessage, self.emailer.get_email(from_mail=PYGOR_EMAIL).as_string())
+
+
+    def tearDown(self):
+        """ Revert smtp
+        """
+        global inbox
+        inbox = []

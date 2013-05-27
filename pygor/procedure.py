@@ -3,13 +3,13 @@ import shlex
 from subprocess import Popen, PIPE
 
 from pygor.logger import Logger
-from pygor.settings_manager import DEFAULT_SETTINGS, update_settings
+from pygor.settings_manager import DEFAULT_SETTINGS, updated_settings
 
 class Procedure(Logger):
     """ Subclass this to create a procedure that the Big Machine can run.
     """
 
-    def __init__(self, command, expected_exit=0, working_dir=None, conf=DEFAULT_SETTINGS, **kwargs):
+    def __init__(self, command, expected_exit=0, conf=DEFAULT_SETTINGS, **kwargs):
         """Most of the time creating the right procedure will be just
         enough. The parametrizer is a callable expected to return a
         dict to dynamically format command with a single parameter
@@ -24,9 +24,15 @@ class Procedure(Logger):
         - get_exit
 
         """
+        self.settings = updated_settings(conf.settings, **kwargs)
+
         self.command = command
         self.expected_exit = expected_exit
-        self.working_dir = working_dir
+        self.working_dir = self.settings["WORKING_DIR"]
+
+        if not os.path.isdir(self.working_dir):
+            self.logger.info("Missing directory '%s'. Creating..." % self.working_dir)
+            os.mkdir(self.working_dir)
 
         self.stdout = None
         self.stderr = None

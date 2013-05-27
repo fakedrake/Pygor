@@ -34,6 +34,6 @@ class TestTagger(unittest.TestCase):
 
 
     def test_tagger(self):
-        self.tagger = Tagger([GIT_REPO], in_resources())
+        self.tagger = Tagger([GIT_REPO], default_project_root=in_resources())
         self.tagger.make_tags()
         self.assertIn("Release-", self.repo.tags[0].name)

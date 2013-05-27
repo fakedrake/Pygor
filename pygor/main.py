@@ -8,8 +8,8 @@ from pygor.procedure import Procedure
 from pygor.emailer import Emailer
 from pygor.bigmachine import BigMachine
 from pygor.tagger import Tagger
-from pygor.settings import (LOGGER_ID, LOG_LEVEL, ENABLE_EMAIL,
-                            LOG_FORMAT, SMTP_CONFIG, PYGOR_HELP)
+from pygor.settings_manager import Settings, updated_settings
+
 
 class ContextFilter(logging.Filter):
     """ A fiulter to add some contextual info.
@@ -27,42 +27,49 @@ class Pygor(object):
     """ Pygor orichestrates the machinery.
     """
 
-    def __init__(self, properties, log_level=LOG_LEVEL):
+    def __init__(self, config_file, **kwargs):
         """
 	"""
-        self.make_directives = open(make_directives_file).readlines()
-        self.watched_repos = open(watched_projects_file).readlines()
-        self.spamtargets = open(spamtargets_file).readlines()
-        self.setup_procedures = open(setup_procedures_file).readlines()
+        self.config = Settings(config_file)
+        self.settings = updated_settings(self.config.settings, **kwargs)
+
+        self.make_directives = self.config.make_cmds
+        self.watched_repos = self.config.watched_repos
+        self.spamtargets = self.config.spamtargets
+        self.setup_procedures = self.config.setup_cmds
 
         # Setup the logger
-        self.logfile = logfile
-        hdlr = logging.FileHandler(logfile)
-        formatter = logging.Formatter(LOG_FORMAT)
+        self.logfile = self.settings["LOGFILE"]
+        hdlr = logging.FileHandler(self.logfile)
+        formatter = logging.Formatter(self.settings["LOG_FORMAT"])
 
         hdlr.setFormatter(formatter)
         hdlr.addFilter(ContextFilter())
 
-        self.logger = logging.getLogger(LOGGER_ID)
+        self.logger = logging.getLogger(self.settings["LOGGER_ID"])
         self.logger.addHandler(hdlr)
-        self.logger.setLevel(log_level)
+        self.logger.setLevel(self.settings["LOG_LEVEL"])
 
-        self.machine = BigMachine(procedures=map(Procedure, self.setup_procedures), working_dir=working_directory)
+        self.machine = BigMachine(procedures=map(Procedure,
+                                                 self.setup_procedures),
+                                  working_dir=self.settings["WORKING_DIR"])
 
 
-    def run(self, enable_email=ENABLE_EMAIL):
+    def run(self, **kwargs):
         """Add all the tests to the machine, email me the result and if
         everything went well tag the interesting repos.
 
         """
+        settings = updated_settings(self.settings, **kwargs)
+
         for md in self.make_directives:
             self.machine.add_test(md)
 
         self.machine.run()
 
-        if enable_email:
-            emailer = Emailer(self.spamtargets, self.machine)
-            emailer.send_email(SMTP_CONFIG, logfile=self.logfile)
+        if settings["ENABLE_EMAIL"]:
+            emailer = Emailer(self.machine, self.config)
+            emailer.send_email(smtp_config=settings["SMTP_CONFIG"], logfile=self.logfile)
 
         if not self.machine.get_error():
             tagger = Tagger(self.watched_repos)

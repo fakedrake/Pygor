@@ -2,7 +2,7 @@ import os
 import smtplib
 from email.mime.text import MIMEText
 
-from pygor.settings_manager import DEFAULT_SETTINGS, update_settings
+from pygor.settings_manager import DEFAULT_SETTINGS, updated_settings
 from pygor.logger import Logger
 
 class Emailer(Logger):
@@ -53,16 +53,16 @@ class Emailer(Logger):
         msg = MIMEText(msg_template[mt]['body'] % context)
 
         msg['Subject'] = msg_template[mt]['subject'] % context
-        msg['From'] = from_mail
+        msg['From'] = settings["PYGOR_EMAIL"]
         msg['To'] = ','.join(self.spamtargets)
         return msg
 
-    def send_email(self, **kwargs) smtp_config, msg_template=EMAIL_TEMPLATES, logfile=LOGFILE):
+    def send_email(self, **kwargs):
         """smtp_config is mandatory really. You will need 'server', 'port',
         'user' (this is the email), 'password' in there.
 
         """
-        settings = update_settings(self.settings, **kwargs)
+        settings = updated_settings(self.settings, **kwargs)
         smtp_config = settings["SMTP_CONFIG"]
         msg = self.get_email(**kwargs)
         s = smtplib.SMTP()

@@ -76,3 +76,5 @@ import logging
 LOGGER_ID = "pygor"
 LOG_LEVEL = logging.INFO
 LOG_FORMAT = "%(asctime)s - %(class_name)s [%(levelname)s]: %(message)s"
+
+WORKING_DIR = "."

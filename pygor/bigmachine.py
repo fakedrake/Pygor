@@ -1,7 +1,8 @@
+import os
 from datetime import datetime
 
 from pygor.procedure import Procedure, MakeProcedure
-from pygor.settings_manager import DEFAULT_SETTINGS, update_settings
+from pygor.settings_manager import DEFAULT_SETTINGS, updated_settings
 
 
 def generate_id(id_template):
@@ -28,7 +29,7 @@ class BigMachine(object):
         """
         self.settings = updated_settings(conf.settings, **kwargs)
 
-        self.identifier = generate_id(self.settings["ID_TEMPLATE"])
+        self.identifier = generate_id(self.settings["DEFAULT_MACHINE_ID_TEMPLATE"])
         try:
             self.working_dir = os.path.join(self.settings["WORKING_DIR"], self.identifier)
         except AttributeError:

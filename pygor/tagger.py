@@ -5,7 +5,7 @@ import git
 
 from pygor.logger import Logger
 from pygor.procedure import Procedure
-from pygor.settings_manager import DEFAULT_SETTINGS, update_settings
+from pygor.settings_manager import DEFAULT_SETTINGS, updated_settings
 
 class Tagger(Logger):
     """ Add tags to the heads of objects
@@ -31,18 +31,18 @@ class Tagger(Logger):
             r.push(tags=True)
 
 
-    def make_tag(self, repo):
+    def make_tag(self, repo, **kwargs):
         """Create the tag name we are to create from current time."""
 
-        settings = update_settings(self.settings, **kwargs)
+        settings = updated_settings(self.settings, **kwargs)
         repo.create_tag(datetime.datetime.now().strftime(settings["DEFAULT_TAG_STRF_TEMPLATE"]))
 
-    def make_tags(self):
+    def make_tags(self, **kwargs):
         """Tag all branches"""
 
-        settings = update_settings(self.settings, **kwargs)
+        settings = updated_settings(self.settings, **kwargs)
         for r in self.repos:
-            self.make_tag(r, settings["DEFAULT_TAG_STRF_TEMPLATE"])
+            self.make_tag(r, DEFAULT_TAG_STRF_TEMPLATE=settings["DEFAULT_TAG_STRF_TEMPLATE"])
 
 
 class GITRepo(git.Repo):
